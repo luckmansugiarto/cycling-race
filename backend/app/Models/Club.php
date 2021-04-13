@@ -2,22 +2,11 @@
 
 namespace App\Models;
 
-use App\Traits\ModelFillable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class Club extends Model
+class Club extends BaseModel
 {
-    use HasFactory, ModelFillable;
-
-    public $timestamps = false;
-    protected $table = 'club';
-
-    public function __construct($attributes = array())
-    {
-        $this->fillable($this->getFillable());
-        parent::__construct($attributes);
-    }
+    protected $table = 'club';   
 
     public function races() {
         return $this->hasMany(Race::class);

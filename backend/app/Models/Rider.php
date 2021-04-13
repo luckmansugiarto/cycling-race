@@ -2,22 +2,11 @@
 
 namespace App\Models;
 
-use App\Traits\ModelFillable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class Rider extends Model
+class Rider extends BaseModel
 {
-    use HasFactory, ModelFillable;
-
-    public $timestamps = false;
     protected $table = 'rider';
-
-    public function __construct($attributes = array())
-    {
-        $this->fillable($this->getFillable());
-        parent::__construct($attributes);
-    }
 
     public function races() {
         return $this->belongsToMany(Race::class, 'race_result', 'rider_id', 'race_id')

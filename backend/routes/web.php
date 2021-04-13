@@ -13,6 +13,14 @@
 |
 */
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
+$router->group(['middleware' => 'throttle:10,1'], function ($app) {
+    $app->get('clubs', 'ClubController@getAll');
+    $app->post('clubs', 'ClubController@createNew');
+    $app->put('clubs/{id}', 'ClubController@update');
+
+    $app->get('races', 'RaceController@getAll');
+    $app->post('races/{id}/riders', 'RaceController@addParticipant');
+    $app->post('races/{id}/riders/{riderId}', 'RaceController@saveResult');
+    $app->post('races', 'RaceController@createNew');
+    $app->put('races/{id}', 'RaceController@update');
 });
