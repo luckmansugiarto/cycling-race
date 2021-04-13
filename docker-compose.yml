@@ -9,6 +9,8 @@ services:
     depends_on:
       - database
     environment:
+      - WAIT_HOSTS=database:3306      # wait for database service to be ready first
+      - WAIT_HOSTS_TIMEOUT=300        # timeout the waiting after 5 minutes have elapsed.
       - WEB_DOCUMENT_ROOT=/app/public
     image: custom-backend:latest
     tty: true
@@ -38,9 +40,6 @@ services:
   #     - "./frontend:/var/www"
 
   database:
-    build:
-      context: .
-      dockerfile: docker/database/Dockerfile
     container_name: database
     environment:      
       - MYSQL_ALLOW_EMPTY_PASSWORD=1 # Should be disabled on production
@@ -49,14 +48,13 @@ services:
       - MYSQL_DATABASE=exercise
     expose:
       - "3306"
-    image: custom-mysql:latest
+    image: mysql:8.0.23
     networks:
       - app_default
     ports:
       - "3306:3306"
     tty: true
     volumes:      
-      - "./db-init.sql:/docker-entrypoint-initdb.d/db-init.sql"
       - "app_dbdata:/var/lib/mysql"
 
 networks:
