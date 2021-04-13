@@ -1,0 +1,66 @@
+version: '3.5'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    container_name: api
+    depends_on:
+      - database
+    environment:
+      - WEB_DOCUMENT_ROOT=/app/public
+    image: custom-backend:latest
+    tty: true
+    ports:
+      - "8080:80"
+    networks:
+      - app_default
+    volumes:
+      # root directory of the project
+      - "./backend:/app"
+      - "api_vendor:/app/vendor"
+
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/frontend/Dockerfile
+  #   container_name: webapp    
+  #   image: custom-node:latest
+  #   # image: node:14-alpine
+  #   tty: true
+  #   ports:
+  #     - "3000:8080"
+  #   networks:
+  #     - app_default
+  #   volumes:
+  #     # root directory of the project
+  #     - "./frontend:/var/www"
+
+  database:
+    build:
+      context: .
+      dockerfile: docker/database/Dockerfile
+    container_name: database
+    environment:      
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1 # Should be disabled on production
+      - MYSQL_USER=superuser
+      - MYSQL_PASSWORD=supersecure
+      - MYSQL_DATABASE=exercise
+    expose:
+      - "3306"
+    image: custom-mysql:latest
+    networks:
+      - app_default
+    ports:
+      - "3306:3306"
+    tty: true
+    volumes:      
+      - "./db-init.sql:/docker-entrypoint-initdb.d/db-init.sql"
+      - "app_dbdata:/var/lib/mysql"
+
+networks:
+  app_default:
+volumes:
+  api_vendor:
+  app_dbdata:
