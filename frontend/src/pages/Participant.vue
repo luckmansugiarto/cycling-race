@@ -6,17 +6,17 @@
             id="AddParticipants"
             class="q-my-md"
             :label="lblAddParticipant"
-            type="button" 
+            type="button"
             color="primary"
             @click="toggleForm"
           ></q-btn>
-        <q-btn            
+        <q-btn
           class="q-my-md q-mx-md"
-          label="Save"              
+          label="Save"
           type="submit"
           color="positive"
           @click="createNew"
-          v-show="showsForm"      
+          v-show="showsForm"
         ></q-btn>
       </div>
     </div>
@@ -33,7 +33,7 @@
               class="q-mb-md"
               label="Select Existing Participant"
               transition-show="jump-up"
-              transition-hide="jump-up"          
+              transition-hide="jump-up"
               v-model="participant"
               :options="riderList"
               option-value="id"
@@ -52,21 +52,21 @@
           </div>
         </div>
 
-        <q-input 
-          v-model="formData.firstname" 
-          label="Firstname"          
+        <q-input
+          v-model="formData.firstname"
+          label="Firstname"
           :rules="[ val => val && val.length > 0 || 'Firstname cannot be empty']"
         />
 
-        <q-input 
-          v-model="formData.surname" 
-          label="Lastname"          
+        <q-input
+          v-model="formData.surname"
+          label="Lastname"
           :rules="[ val => val && val.length > 0 || 'Lastname cannot be empty']"
         />
 
         <q-input
-          type="number" 
-          v-model="formData.age" 
+          type="number"
+          v-model="formData.age"
           label="Age"
           :rules="[ val => (val >= 10 && val <= 99) || 'Invalid age']"
         />
@@ -77,9 +77,9 @@
           transition-show="jump-up"
           transition-hide="jump-up"
           option-value="value"
-          option-label="label"          
+          option-label="label"
           v-model="formData.grading"
-          :options="gradings"          
+          :options="gradings"
           style="width: 250px"
           emit-value
         />
@@ -90,16 +90,16 @@
           transition-show="jump-up"
           transition-hide="jump-up"
           option-value="value"
-          option-label="label"          
+          option-label="label"
           v-model="formData.gender"
-          :options="genders"          
+          :options="genders"
           style="width: 250px"
           emit-value
         />
 
         <q-input
-          type="number" 
-          v-model="formRaceResult.finish_position" 
+          type="number"
+          v-model="formRaceResult.finish_position"
           label="Finish Position"
           :rules="[ val => (val >= 1 && val < riderList.length) || 'Invalid finish position']"
         />
@@ -122,14 +122,14 @@
     </q-slide-transition>
 
     <div class="row justify-center">
-      <div class="col">        
-        <q-table 
-          title="Participants"          
-          :data="raceParticipants" 
-          :columns="columns" 
+      <div class="col">
+        <q-table
+          title="Participants"
+          :data="raceParticipants"
+          :columns="columns"
           row-key="name"
           :loading="isLoading"
-        ></q-table>  
+        ></q-table>
       </div>
     </div>
   </q-page>
@@ -161,7 +161,7 @@ export default defineComponent({
           required: true,
           label: 'Grade',
           align: 'left',
-          field: (row: {grading: string}) => row.grading,          
+          field: (row: {grading: string}) => row.grading,
           sortable: true
         },
         {
@@ -169,7 +169,7 @@ export default defineComponent({
           required: true,
           label: 'Gender',
           align: 'left',
-          field: (row: {gender: string}) => row.gender,        
+          field: (row: {gender: string}) => row.gender,
           sortable: true
         },
         {
@@ -177,7 +177,7 @@ export default defineComponent({
           required: true,
           label: 'age',
           align: 'left',
-          field: (row: {age: number}) => row.age,        
+          field: (row: {age: number}) => row.age,
           sortable: true
         },
         {
@@ -185,7 +185,7 @@ export default defineComponent({
           required: true,
           label: 'Finished Position',
           align: 'center',
-          field: (row: {pivot: {finish_position: string}}) => row.pivot.finish_position,          
+          field: (row: {pivot: {finish_position: string}}) => row.pivot.finish_position,
           sortable: true
         },
         {
@@ -199,14 +199,14 @@ export default defineComponent({
         },
       ],
       genders: [
-        { label: 'Male', value: 'Male' }, 
+        { label: 'Male', value: 'Male' },
         { label: 'Female', value: 'Female' },
         { label: 'Other', value: 'Other' }
       ],
       gradings: [
-        { label: 'Master', value: 'Master' }, 
+        { label: 'Master', value: 'Master' },
         { label: 'Advanced', value: 'Advanced' },
-        { label: 'Intermediate', value: 'Intermediate' }, 
+        { label: 'Intermediate', value: 'Intermediate' },
         { label: 'Beginner', value: 'Beginner' }
       ],
       showsForm: false
@@ -245,21 +245,42 @@ export default defineComponent({
       );
     };
 
-    const createNew = () => {      
+    const createNew = () => {
       let route = ctx.root.$route;
+      let axios = ctx.root.$axios;
 
-      if (isNil(participant)) {
-        url = '/api/riders';
-      } else {        
-        ctx.root.$axios.post('/api/races/' + route.params.id + '/riders/' + formRaceResult.value.rider_id, formRaceResult.value)
+      if (isNil(participant.value)) {
+        axios.post('/api/riders', formData.value)
+          .then(v => {
+            console.log(v.data);
+            return axios.post('/api/races/' + route.params.id + '/riders/' + v.data.id, {
+              finish_position: formRaceResult.value.finish_position,
+              finish_time: formRaceResult.value.finish_time
+            });
+          })
           .then(r => {
+            ctx.root.$q.notify({type: 'positive', message: 'Participant added into the race'});
             fetchData();
             resetForm();
-          });    
-      }      
+          })
+          .catch((e) => {
+            ctx.root.$q.notify({ type: 'negative', message: 'Failed to add participant into the race' });
+          });
+      } else {
+        axios.post('/api/races/' + route.params.id + '/riders/' + formRaceResult.value.rider_id, {
+          finish_position: formRaceResult.value.finish_position,
+          finish_time: formRaceResult.value.finish_time
+        })
+          .then(r => {
+            ctx.root.$q.notify({type: 'positive', message: 'Participant added into the race'});
+            fetchData();
+            resetForm();
+          })
+          .catch((e) => {
+            ctx.root.$q.notify({ type: 'negative', message: 'Failed to add participant into the race' });
+          });
+      }
     }
-
-    ctx.root.$q.notify({type: 'positive', message: 'success'});
 
     const resetForm = () => {
       participant.value = null;
@@ -277,7 +298,7 @@ export default defineComponent({
       };
     }
 
-    watch(finishTime, (currentVal, oldVal) => {      
+    watch(finishTime, (currentVal, oldVal) => {
       if (currentVal !== '') {
         formRaceResult.value.finish_time = moment(moment(raceDetails).format('YYYY-MM-DD') + ` ${currentVal}`).unix();
       }
@@ -285,7 +306,7 @@ export default defineComponent({
 
     watch(participant, (currentVal, oldVal) => {
       if (!isNil(currentVal)) {
-        formData.value = currentVal;       
+        formData.value = currentVal;
         formRaceResult.value.rider_id = currentVal.id;
       }
     });
@@ -293,22 +314,22 @@ export default defineComponent({
     resetForm();
     fetchData();
 
-    return { 
+    return {
       createNew,
       finishTime,
       formData,
       formRaceResult,
-      isLoading, 
-      participant, 
+      isLoading,
+      participant,
       raceParticipants,
       resetForm,
-      riderList 
+      riderList
     };
   },
-  methods: { 
+  methods: {
     showTime() {
       this.$refs.qTimeProxy.show();
-    },   
+    },
     toggleForm() {
       this.showsForm = !this.showsForm;
 

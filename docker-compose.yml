@@ -28,9 +28,8 @@ services:
       context: .
       dockerfile: docker/frontend/Dockerfile
     container_name: webapp
-    command: ["sh"]
-    # depends_on:
-    #   - backend
+    depends_on:
+      - backend
     image: custom-node:latest
     tty: true
     ports:
@@ -64,5 +63,5 @@ networks:
   app_default:
 volumes:
   api_vendor:
-  # webapp_node_modules:
+  webapp_node_modules:
   app_dbdata:

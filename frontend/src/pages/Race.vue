@@ -27,11 +27,10 @@
           label="Select Club"
           transition-show="jump-up"
           transition-hide="jump-up"          
-          v-model="formData.club_id"
+          v-model="selectedClub"
           :options="clubList"
           option-value="id"
           option-label="title"
-          emit-value
           style="width: 250px"
         />
         <q-input 
@@ -136,10 +135,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, ref, watch } from '@vue/composition-api';
 import { usePromise } from 'vue-composable';
 import moment from 'moment';
 import { Race } from '../components/model';
+import { isNil } from 'lodash';
 
 export default defineComponent({
   name: 'Races',
@@ -194,6 +194,7 @@ export default defineComponent({
     let raceList: Array = ref([]);
     let isLoading: unknown = ref(true);
     let formData: Race = ref({});
+    let selectedClub: {title: string, address: string} = ref(null);
 
     const fetchData = (type: string) => {
       if (type === 'club') {
@@ -210,15 +211,8 @@ export default defineComponent({
             .then(r => r.json(), true)
             .then((v: unknown) => {
               raceList.value = v;
-              isLoading.value = false;
-              ctx.root.$q.notify({
-                type: 'positive',
-                message: 'Saved'
-              });
-            })
-            .catch((e) => {
-                ctx.root.$q.notify({ type: 'negative', message: 'Failed to save' });
-            })
+              isLoading.value = false;              
+            })            
         );
       }
     };
@@ -228,19 +222,32 @@ export default defineComponent({
         .then(r => {
           fetchData();
           resetForm();
-        });        
+          ctx.root.$q.notify({
+            type: 'positive',
+            message: 'Saved'
+          });
+        })
+        .catch((e) => {
+          ctx.root.$q.notify({ type: 'negative', message: 'Failed to save' });
+        })
     };
 
     const resetForm = () => {
       formData.value = {
         address: '',
         club_id: null,
-        end_date: '',
+        end_date: '',        
         start_date: '',
         status: '',
         title: ''
       };
     }
+
+    watch(selectedClub, (curVal, oldVal) => {
+      if (!isNil(curVal)) {
+        formData.value.club_id = curVal.id;
+      }
+    });
 
     resetForm();
     fetchData();
@@ -251,7 +258,8 @@ export default defineComponent({
       createNew, 
       formData, 
       isLoading, 
-      raceList 
+      raceList,
+      selectedClub
     };
   },
   methods: {    
