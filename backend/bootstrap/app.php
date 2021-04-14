@@ -72,9 +72,9 @@ $app->configure('app');
 |
 */
 
-// $app->middleware([
-//     App\Http\Middleware\ExampleMiddleware::class
-// ]);
+$app->middleware([
+    Fruitcake\Cors\HandleCors::class
+]);
 
 $app->routeMiddleware([
     'throttle' => App\Http\Middleware\ThrottleRequests::class
@@ -112,5 +112,7 @@ $app->router->group([
 ], function ($router) {
     require __DIR__.'/../routes/web.php';
 });
+
+$app->configure('cors');
 
 return $app;

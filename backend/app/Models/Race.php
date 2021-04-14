@@ -13,6 +13,7 @@ class Race extends BaseModel
     }
 
     public function riders() {
-        return $this->belongsToMany(Rider::class, 'race_result', 'race_id', 'rider_id');
+        return $this->belongsToMany(Rider::class, 'race_result', 'race_id', 'rider_id')
+            ->withPivot('finish_position', 'finish_time');
     }
 }

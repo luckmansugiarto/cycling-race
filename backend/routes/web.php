@@ -23,4 +23,7 @@ $router->group(['middleware' => 'throttle:10,1'], function ($app) {
     $app->post('races/{id}/riders/{riderId}', 'RaceController@saveResult');
     $app->post('races', 'RaceController@createNew');
     $app->put('races/{id}', 'RaceController@update');
+
+    $app->get('riders', 'RiderController@getAll');
+    $app->post('riders', 'RiderController@createNew');
 });
